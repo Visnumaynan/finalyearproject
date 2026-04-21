@@ -1,6 +1,4 @@
 export * from './auth';
-export * from './navigation';
-export * from './ui';
 
 import type { Auth } from './auth';
 
@@ -9,6 +7,5 @@ export type AppPageProps<
 > = T & {
     name: string;
     auth: Auth;
-    sidebarOpen: boolean;
     [key: string]: unknown;
 };

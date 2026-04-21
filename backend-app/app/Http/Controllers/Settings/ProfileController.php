@@ -19,9 +19,15 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $profile = $request->user()->profile;
+
         return Inertia::render('settings/Profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
+            'healthProfile' => $profile ? [
+                'sex' => $profile->sex,
+                'date_of_birth' => $profile->date_of_birth?->format('Y-m-d'),
+            ] : null,
         ]);
     }
 
@@ -39,6 +45,24 @@ class ProfileController extends Controller
         $request->user()->save();
 
         return to_route('profile.edit');
+    }
+
+    /**
+     * Update sex and date of birth (used by the NAFLD prediction model).
+     */
+    public function updateHealth(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'sex' => ['nullable', 'in:Male,Female,Other'],
+            'date_of_birth' => ['nullable', 'date', 'before:today'],
+        ]);
+
+        $request->user()->profile()->updateOrCreate(
+            ['user_id' => $request->user()->id],
+            $validated,
+        );
+
+        return to_route('profile.edit')->with('status', 'health-profile-updated');
     }
 
     /**

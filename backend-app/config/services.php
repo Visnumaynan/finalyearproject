@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'fastapi' => [
+        'url' => env('FASTAPI_URL', 'http://127.0.0.1:8000'),
+        'timeout' => (int) env('FASTAPI_TIMEOUT', 15),
+        'token' => env('FASTAPI_INTERNAL_TOKEN', ''),
+    ],
+
 ];

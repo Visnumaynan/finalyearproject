@@ -36,6 +36,8 @@ class RiskPredictionFactory extends Factory
             'risk_level' => $riskLevel,
             'model_used' => 'insulin_resistance_v1',
             'prediction_date' => now(),
+            'fastapi_response_ms' => fake()->numberBetween(120, 800),
+            'feature_snapshot' => null,
         ];
     }
 }

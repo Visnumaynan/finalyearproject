@@ -49,4 +49,29 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
         ];
     }
+
+    public function profile(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(UserProfile::class);
+    }
+
+    public function bloodTests(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(BloodTest::class);
+    }
+
+    public function riskPredictions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(RiskPrediction::class);
+    }
+
+    public function alerts(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Alert::class);
+    }
+
+    public function latestPrediction(): ?\Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(RiskPrediction::class)->latestOfMany('prediction_date');
+    }
 }

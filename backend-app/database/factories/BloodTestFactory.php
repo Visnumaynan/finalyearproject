@@ -29,7 +29,9 @@ class BloodTestFactory extends Factory
             'fasting_glucose' => fake()->numberBetween(70, 150), // mg/dL - Normal: <100
             'hba1c' => fake()->numberBetween(50, 100), // mmol/mol (or 4.5-6.5% in old units)
             'bmi' => fake()->randomFloat(2, 18, 40), // kg/m² - Normal: 18.5-24.9
+            'body_weight' => fake()->randomFloat(1, 50, 130), // kg
             'waist_circumference' => fake()->numberBetween(60, 120), // cm
+            'has_fatty_liver' => fake()->boolean(25), // 25% baseline prevalence
             'blood_pressure_systolic' => fake()->numberBetween(90, 180), // mmHg
             'blood_pressure_diastolic' => fake()->numberBetween(60, 120), // mmHg
         ];
