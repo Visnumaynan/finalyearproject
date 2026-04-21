@@ -1,0 +1,39 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend-app/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - sqlite_data:/app/database
+      - storage_data:/app/storage
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+      APP_KEY: ${APP_KEY}
+      DB_CONNECTION: sqlite
+      DB_DATABASE: /app/database/database.sqlite
+      SESSION_DRIVER: database
+      QUEUE_CONNECTION: database
+      CACHE_STORE: database
+      LOG_CHANNEL: stderr
+      FASTAPI_URL: http://ai:8001
+      FASTAPI_TIMEOUT: "30"
+      FASTAPI_INTERNAL_TOKEN: ${FASTAPI_INTERNAL_TOKEN:-dev-token}
+    depends_on:
+      - ai
+
+  ai:
+    build:
+      context: .
+      dockerfile: ai-service/Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      FASTAPI_INTERNAL_TOKEN: ${FASTAPI_INTERNAL_TOKEN:-dev-token}
+
+volumes:
+  sqlite_data:
+  storage_data:
