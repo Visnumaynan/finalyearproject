@@ -1,0 +1,21 @@
+# Python
+ai-service/venv/
+ai-service/__pycache__/
+ai-service/*.pyc
+ai-service/.pytest_cache/
+
+# Laravel
+backend-app/vendor/
+backend-app/node_modules/
+backend-app/.env
+backend-app/storage/logs/*.log
+backend-app/storage/framework/cache/
+backend-app/storage/framework/sessions/
+backend-app/storage/framework/views/
+backend-app/bootstrap/cache/*.php
+backend-app/database/database.sqlite
+
+# Git / IDE
+.git/
+.gitignore
+**/.DS_Store

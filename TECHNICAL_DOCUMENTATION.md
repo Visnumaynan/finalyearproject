@@ -141,7 +141,39 @@ The user submits a set of routine blood test results (e.g., ALT, triglycerides, 
 
 ---
 
-### 2.2 Monolith vs Microservices
+### 2.2 Deployment — Docker Containers
+
+Both services run as Docker containers orchestrated by `docker-compose.yml` at the project root. A single command starts the entire application:
+
+```bash
+docker compose up --build
+```
+
+| Container | Base Image | What it contains |
+|---|---|---|
+| `finalyearproject-backend` | `php:8.3-cli` + Node 20 | Laravel app + compiled Vite assets + Composer deps |
+| `finalyearproject-ai` | `python:3.11-slim` + libgomp1 | FastAPI service + LightGBM + trained `.pkl` model |
+
+**Docker files:**
+
+| File | Purpose |
+|---|---|
+| `docker-compose.yml` | Defines both services, internal network, volumes, env vars |
+| `backend-app/Dockerfile` | Builds PHP + Node image; installs deps; runs `npm run build` |
+| `backend-app/docker-entrypoint.sh` | Runs at container start: creates SQLite file, migrates, seeds, starts server |
+| `ai-service/Dockerfile` | Builds Python image; installs `libgomp1`; copies trained model |
+| `.dockerignore` | Excludes `venv/`, `vendor/`, `node_modules/`, `.env` from build context |
+
+**Internal networking:**
+Inside Docker the two containers share the `finalyearproject_default` bridge network. The backend reaches the AI service via `http://ai:8001` (the service name), not `127.0.0.1`. This is set as `FASTAPI_URL=http://ai:8001` in `docker-compose.yml`.
+
+**Persistent volumes:**
+- `sqlite_data` → `/app/database` — SQLite file survives container restarts
+- `storage_data` → `/app/storage` — Laravel logs and framework cache
+
+---
+
+### 2.3 Monolith vs Microservices
 
 | Part | Pattern | Reason |
 |---|---|---|
@@ -150,7 +182,7 @@ The user submits a set of routine blood test results (e.g., ALT, triglycerides, 
 
 ---
 
-### 2.3 How Components Interact
+### 2.4 How Components Interact
 
 ```
 Browser ──[Inertia visit]──► Laravel routes web.php
@@ -1089,7 +1121,50 @@ php artisan test --compact --filter=BloodTest
 
 ## 11. Commands & Setup
 
-### 11.1 Prerequisites
+### 11.1 Option A — Docker (Recommended)
+
+The easiest way to run the full application. No PHP, Python, or Node.js installation required on the host.
+
+**Prerequisites:** Docker Desktop installed and running.
+
+**First run:**
+```bash
+# From the project root (finalyearproject/)
+docker compose up --build
+```
+
+This single command:
+1. Builds the PHP + Node backend image
+2. Builds the Python AI image (copies trained model inside)
+3. Creates SQLite database, runs all migrations, seeds demo data
+4. Starts Laravel on port 8000 and FastAPI on port 8001
+
+**Subsequent runs (no code changes):**
+```bash
+docker compose up
+```
+
+**After changing any source file:**
+```bash
+docker compose down
+docker compose up --build
+```
+
+**Environment file required at project root (`.env`):**
+```env
+APP_KEY=base64:...          ← generate once with: php artisan key:generate --show
+FASTAPI_INTERNAL_TOKEN=change-me-to-a-secure-random-string
+```
+
+**Access:**
+- Web app: `http://localhost:8000`
+- AI health check: `http://localhost:8001/health`
+
+---
+
+### 11.2 Option B — Local Development (Manual)
+
+**Prerequisites:**
 
 | Requirement | Version |
 |---|---|
@@ -1098,10 +1173,7 @@ php artisan test --compact --filter=BloodTest
 | Node.js | ≥ 18 |
 | Python | ≥ 3.11 |
 
----
-
-### 11.2 First-Time Setup
-
+**First-time setup:**
 ```bash
 # 1. Laravel setup
 cd backend-app
@@ -1120,18 +1192,16 @@ venv\Scripts\activate          # Windows
 pip install -r requirements.txt
 ```
 
----
+**Running the application:**
 
-### 11.3 Running the Application
-
-**Terminal 1 — Laravel + Vite:**
+Terminal 1 — Laravel + Vite:
 ```bash
 cd backend-app
 composer run dev
-# Starts Laravel (port 8000) + Vite HMR (port 5173)
+# Starts Laravel (port 8000) + queue worker + Vite HMR (port 5173)
 ```
 
-**Terminal 2 — FastAPI AI service:**
+Terminal 2 — FastAPI AI service:
 ```bash
 cd ai-service
 venv\Scripts\activate
@@ -1144,7 +1214,7 @@ uvicorn main:app --reload --host 127.0.0.1 --port 8001
 
 ---
 
-### 11.4 Environment Variables
+### 11.3 Environment Variables
 
 ```env
 APP_NAME=LiverCare
@@ -1459,9 +1529,19 @@ RiskPrediction::whereHas('bloodTest')->where('user_id', $userId)->...
 └────────────────────────────────────────────────────────────────┘
 
 ┌─ KEY COMMANDS ─────────────────────────────────────────────────┐
+│  DOCKER (recommended)                                           │
+│  docker compose up --build          First run / after changes  │
+│  docker compose up                  Subsequent runs            │
+│  docker compose down                Stop all containers        │
+│                                                                 │
+│  LOCAL DEV (manual)                                             │
 │  composer run dev                   Laravel + Vite (Terminal 1) │
 │  uvicorn main:app --port 8001       AI service (Terminal 2)    │
+│                                                                 │
+│  DATABASE                                                       │
 │  php artisan migrate:fresh --seed   Reset + reseed database    │
+│                                                                 │
+│  CODE QUALITY                                                   │
 │  vendor/bin/pint --dirty            Format PHP before commit   │
 │  php artisan test --compact         Run all tests              │
 └────────────────────────────────────────────────────────────────┘

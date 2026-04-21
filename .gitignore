@@ -1,0 +1,2 @@
+# Docker environment — contains APP_KEY and secrets
+.env
