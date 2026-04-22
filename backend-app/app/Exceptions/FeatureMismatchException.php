@@ -7,10 +7,8 @@ use Illuminate\Http\JsonResponse;
 
 class FeatureMismatchException extends Exception
 {
-    /** @var list<string> */
     private array $missingFeatures;
 
-    /** @param list<string> $missingFeatures */
     public function __construct(array $missingFeatures = [])
     {
         $this->missingFeatures = $missingFeatures;
