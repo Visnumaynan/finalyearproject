@@ -9,6 +9,8 @@ export default function Register() {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         email: '',
+        sex: '',
+        date_of_birth: '',
         password: '',
         password_confirmation: '',
     });
@@ -17,6 +19,9 @@ export default function Register() {
         e.preventDefault();
         post('/register');
     }
+
+    const inputClass =
+        'w-full rounded-xl border border-white/[0.08] bg-[#111] px-4 py-3 text-sm text-white placeholder-[#444] transition focus:border-white/20 focus:outline-none';
 
     return (
         <AuthLayout title="Create account" description="Start monitoring your liver health">
@@ -38,7 +43,7 @@ export default function Register() {
                         onChange={(e) => setData('name', e.target.value)}
                         autoComplete="name"
                         placeholder="John Smith"
-                        className="w-full rounded-xl border border-white/[0.08] bg-[#111] px-4 py-3 text-sm text-white placeholder-[#444] transition focus:border-white/20 focus:outline-none"
+                        className={inputClass}
                     />
                     {errors.name && <p className="mt-1 text-xs text-red-400">{errors.name}</p>}
                 </div>
@@ -52,9 +57,40 @@ export default function Register() {
                         onChange={(e) => setData('email', e.target.value)}
                         autoComplete="email"
                         placeholder="you@example.com"
-                        className="w-full rounded-xl border border-white/[0.08] bg-[#111] px-4 py-3 text-sm text-white placeholder-[#444] transition focus:border-white/20 focus:outline-none"
+                        className={inputClass}
                     />
                     {errors.email && <p className="mt-1 text-xs text-red-400">{errors.email}</p>}
+                </div>
+
+                {/* Sex + Date of birth — side by side */}
+                <div className="grid grid-cols-2 gap-3">
+                    <div>
+                        <label className="mb-1.5 block text-xs font-medium text-[#888]">Sex</label>
+                        <select
+                            value={data.sex}
+                            onChange={(e) => setData('sex', e.target.value)}
+                            className="w-full rounded-xl border border-white/[0.08] bg-[#111] px-4 py-3 text-sm text-white transition focus:border-white/20 focus:outline-none"
+                        >
+                            <option value="" disabled className="text-[#444]">Select</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                        {errors.sex && <p className="mt-1 text-xs text-red-400">{errors.sex}</p>}
+                    </div>
+
+                    <div>
+                        <label className="mb-1.5 block text-xs font-medium text-[#888]">Date of birth</label>
+                        <input
+                            type="date"
+                            value={data.date_of_birth}
+                            onChange={(e) => setData('date_of_birth', e.target.value)}
+                            max={new Date().toISOString().split('T')[0]}
+                            className="w-full rounded-xl border border-white/[0.08] bg-[#111] px-4 py-3 text-sm text-white transition focus:border-white/20 focus:outline-none [color-scheme:dark]"
+                        />
+                        {errors.date_of_birth && (
+                            <p className="mt-1 text-xs text-red-400">{errors.date_of_birth}</p>
+                        )}
+                    </div>
                 </div>
 
                 {/* Password */}
@@ -89,7 +125,7 @@ export default function Register() {
                         onChange={(e) => setData('password_confirmation', e.target.value)}
                         autoComplete="new-password"
                         placeholder="••••••••"
-                        className="w-full rounded-xl border border-white/[0.08] bg-[#111] px-4 py-3 text-sm text-white placeholder-[#444] transition focus:border-white/20 focus:outline-none"
+                        className={inputClass}
                     />
                     {errors.password_confirmation && (
                         <p className="mt-1 text-xs text-red-400">{errors.password_confirmation}</p>

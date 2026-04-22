@@ -4,18 +4,33 @@ ai-service/__pycache__/
 ai-service/*.pyc
 ai-service/.pytest_cache/
 
-# Laravel
+# Laravel — dependencies (reinstalled inside image)
 backend-app/vendor/
 backend-app/node_modules/
+
+# Laravel — sensitive / environment files
 backend-app/.env
+backend-app/.env.*
+
+# Laravel — generated / runtime files
 backend-app/storage/logs/*.log
 backend-app/storage/framework/cache/
 backend-app/storage/framework/sessions/
 backend-app/storage/framework/views/
 backend-app/bootstrap/cache/*.php
+backend-app/public/hot
+
+# Laravel — test artifacts
+backend-app/tests/
+backend-app/.phpunit.cache/
+backend-app/coverage/
+
+# SQLite (not used — project uses MySQL)
 backend-app/database/database.sqlite
 
 # Git / IDE
 .git/
 .gitignore
 **/.DS_Store
+**/.idea/
+**/.vscode/

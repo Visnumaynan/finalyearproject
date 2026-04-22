@@ -6,15 +6,18 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - sqlite_data:/app/database
       - storage_data:/app/storage
     environment:
       APP_ENV: local
       APP_DEBUG: "true"
       APP_URL: http://localhost:8000
       APP_KEY: ${APP_KEY}
-      DB_CONNECTION: sqlite
-      DB_DATABASE: /app/database/database.sqlite
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_DATABASE: nafld
+      DB_USERNAME: nafld
+      DB_PASSWORD: secret
       SESSION_DRIVER: database
       QUEUE_CONNECTION: database
       CACHE_STORE: database
@@ -23,7 +26,27 @@ services:
       FASTAPI_TIMEOUT: "30"
       FASTAPI_INTERNAL_TOKEN: ${FASTAPI_INTERNAL_TOKEN:-dev-token}
     depends_on:
-      - ai
+      db:
+        condition: service_healthy
+      ai:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: nafld
+      MYSQL_USER: nafld
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: rootsecret
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-unafld", "-psecret"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
 
   ai:
     build:
@@ -33,7 +56,14 @@ services:
       - "8001:8001"
     environment:
       FASTAPI_INTERNAL_TOKEN: ${FASTAPI_INTERNAL_TOKEN:-dev-token}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
 
 volumes:
-  sqlite_data:
+  mysql_data:
   storage_data:

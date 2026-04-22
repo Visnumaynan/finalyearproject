@@ -79,6 +79,10 @@ class SamplePatientsSeeder extends Seeder
      */
     private function createPatient(array $profile, array $tests): void
     {
+        if (User::where('email', $profile['email'])->exists()) {
+            return;
+        }
+
         $user = User::factory()->create([
             'name' => $profile['name'],
             'email' => $profile['email'],

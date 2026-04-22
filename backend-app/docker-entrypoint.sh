@@ -1,10 +1,6 @@
 #!/bin/sh
 set -e
 
-# Ensure SQLite database file exists
-mkdir -p /app/database
-touch /app/database/database.sqlite
-
 # Ensure storage directories exist
 mkdir -p \
     /app/storage/logs \
@@ -15,12 +11,17 @@ mkdir -p \
 
 chmod -R 775 /app/storage /app/bootstrap/cache
 
-# Generate app key if not provided
+# Generate app key if not provided (--show prints it without needing a .env file)
 if [ -z "$APP_KEY" ]; then
-    php artisan key:generate --force
+    APP_KEY=$(php artisan key:generate --show --no-ansi 2>/dev/null)
+    export APP_KEY
 fi
 
-# Run migrations and seed demo data (idempotent — seeders use firstOrCreate)
+# Cache config and routes for faster startup
+php artisan config:cache
+php artisan route:cache
+
+# Run migrations and seed demo data (idempotent — seeders skip existing records)
 php artisan migrate --force --no-interaction
 php artisan db:seed --force --no-interaction
 

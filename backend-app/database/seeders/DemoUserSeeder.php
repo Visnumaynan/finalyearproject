@@ -81,6 +81,10 @@ class DemoUserSeeder extends Seeder
 
     public function run(): void
     {
+        if (User::where('email', 'D')->exists()) {
+            return;
+        }
+
         // 12-month timeline — oldest entry first, newest last.
         // Values are clinically coherent: worse biomarkers correspond to higher scores.
         $timeline = [
