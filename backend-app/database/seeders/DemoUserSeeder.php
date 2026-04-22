@@ -81,7 +81,7 @@ class DemoUserSeeder extends Seeder
 
     public function run(): void
     {
-        if (User::where('email', 'D')->exists()) {
+        if (User::where('email', 'demo@livercare.test')->exists()) {
             return;
         }
 
